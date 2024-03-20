@@ -1,5 +1,8 @@
+import 'package:dronaidapp/Screens/Shopping/provider/order.dart';
 import 'package:dronaidapp/Screens/tracking.dart';
 import 'package:dronaidapp/constants.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/utils.dart';
@@ -11,12 +14,15 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../provider/cart.dart';
 import '../widgets/cart_item.dart';
 
-
 class RazorPayClass extends StatefulWidget {
   final int Amount;
   final LatLng? destination;
   final String? address;
-  RazorPayClass({required this.Amount, required this.destination, required this.address,});
+  RazorPayClass({
+    required this.Amount,
+    required this.destination,
+    required this.address,
+  });
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -38,7 +44,25 @@ class _HomePageState extends State<RazorPayClass> {
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
     // Do something when payment succeeds
-    Navigator.push(context, MaterialPageRoute(builder: (context) => Tracking(destination: widget.destination),),);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Tracking(destination: widget.destination),
+      ),
+    );
+    final cart = Provider.of<Cart>(context,listen: false);
+    FirebaseDatabase.instance
+        .ref("USERS/${FirebaseAuth.instance.currentUser!.uid}/Orders")
+        .update(
+      {
+        "${DateTime.timestamp().hashCode}": Order(
+          address: widget.address!,
+          location: widget.destination!.toString(),
+          id: DateTime.timestamp().toString(),
+          cart: cart.itemsToMap,
+        ).toMap(),
+      },
+    );
 
     print("Payment Done");
   }
@@ -55,15 +79,13 @@ class _HomePageState extends State<RazorPayClass> {
 
   @override
   Widget build(BuildContext context) {
-
     final cart = Provider.of<Cart>(context);
     var amount = widget.Amount;
     var height = MediaQuery.of(context).size.height;
-    var width= MediaQuery.of(context).size.width;
+    var width = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-
         backgroundColor: Colors.white,
         title: Text(
           'Checkout',
@@ -71,9 +93,7 @@ class _HomePageState extends State<RazorPayClass> {
             fontWeight: FontWeight.bold,
           ),
         ),
-
       ),
-
       body: Column(
         children: [
           // Scrollable content
@@ -82,13 +102,16 @@ class _HomePageState extends State<RazorPayClass> {
               child: Column(
                 children: [
                   Container(
-                    padding: EdgeInsets.only(top: height*0.015),
-                    margin: EdgeInsets.only(bottom: height*0.03),
-                    height: height*0.06, // Adjust the height as needed
-                    color:  Color.fromRGBO(245, 238, 248, 1),
+                    padding: EdgeInsets.only(top: height * 0.015),
+                    margin: EdgeInsets.only(bottom: height * 0.03),
+                    height: height * 0.06, // Adjust the height as needed
+                    color: Color.fromRGBO(245, 238, 248, 1),
                     child: Marquee(
                       text: 'Thank You for choosing DRONAID!!',
-                      style: TextStyle(fontSize: height*0.02, fontWeight: FontWeight.bold, color: Color(0xff00078B)),
+                      style: TextStyle(
+                          fontSize: height * 0.02,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xff00078B)),
                       scrollAxis: Axis.horizontal,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       blankSpace: 60.0,
@@ -102,26 +125,32 @@ class _HomePageState extends State<RazorPayClass> {
                     ),
                   ),
                   Column(
-                    children: List.generate(cart.items.values.toList().length, (id) => Card(
-                      margin: EdgeInsets.symmetric(
-                        horizontal: 15.0,
-                        vertical: 4.0,
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: ListTile(
-
-                          leading: CircleAvatar(
-                            child: Padding(
-                                padding: EdgeInsets.all(8),
-                                child: FittedBox(child: Text('₹${cart.items.values.toList()[id].price}'))),
+                    children: List.generate(
+                      cart.items.values.toList().length,
+                      (id) => Card(
+                        margin: EdgeInsets.symmetric(
+                          horizontal: 15.0,
+                          vertical: 4.0,
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              child: Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: FittedBox(
+                                      child: Text(
+                                          '₹${cart.items.values.toList()[id].price}'))),
+                            ),
+                            title: Text(cart.items.values.toList()[id].title),
+                            subtitle: Text(
+                                '${cart.items.values.toList()[id].quantity * cart.items.values.toList()[id].price}'),
+                            trailing: Text(
+                                '${cart.items.values.toList()[id].quantity} x'),
                           ),
-                          title: Text(cart.items.values.toList()[id].title),
-                          subtitle: Text('${cart.items.values.toList()[id].quantity * cart.items.values.toList()[id].price}'),
-                          trailing: Text('${cart.items.values.toList()[id].quantity} x'),
                         ),
                       ),
-                    ),),
+                    ),
                   )
                   // Column(
                   //   children: List.generate(
@@ -141,7 +170,8 @@ class _HomePageState extends State<RazorPayClass> {
           // Persistent container at the bottom
           Container(
             padding: EdgeInsets.all(15),
-            height: height * 0.25, // Set the desired height of the bottom container
+            height:
+                height * 0.25, // Set the desired height of the bottom container
             decoration: BoxDecoration(
               color: Color.fromRGBO(245, 238, 248, 1),
               borderRadius: BorderRadius.only(
@@ -153,8 +183,14 @@ class _HomePageState extends State<RazorPayClass> {
               children: [
                 Column(
                   children: [
-                    Text("Delivering to:", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
-                    SizedBox(height: 8,),
+                    Text(
+                      "Delivering to:",
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
                     Container(
                       padding: EdgeInsets.all(4),
                       decoration: BoxDecoration(
@@ -165,40 +201,55 @@ class _HomePageState extends State<RazorPayClass> {
                     ),
                   ],
                 ),
-                SizedBox(height: 12,),
+                SizedBox(
+                  height: 12,
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    
-                    Text("Total: ₹$amount", style: TextStyle(fontSize: height*0.025, fontWeight: FontWeight.bold),),
+                    Text(
+                      "Total: ₹$amount",
+                      style: TextStyle(
+                          fontSize: height * 0.025,
+                          fontWeight: FontWeight.bold),
+                    ),
                     GestureDetector(
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                        height: height*0.07,
-                        width: width*0.35,
-                
-                        decoration: BoxDecoration(
-                          color: Colors.green,
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(width * 0.02),
+                        child: Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                          height: height * 0.07,
+                          width: width * 0.35,
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(width * 0.02),
+                            ),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Text(
+                                "Pay",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: height * 0.035),
+                              ),
+                              Icon(
+                                CupertinoIcons.arrowtriangle_right_fill,
+                                size: height * 0.035,
+                              )
+                            ],
                           ),
                         ),
-                        child: Row(
-                         crossAxisAlignment: CrossAxisAlignment.stretch,
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Text("Pay", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold,fontSize: height*0.035),),
-                            Icon(CupertinoIcons.arrowtriangle_right_fill, size: height*0.035,)
-                          ],
-                        ),
-                      ),
                         onTap: () {
                           ///Make payment
                           var options = {
                             'key': "rzp_test_akq5S37G2uCNxH",
                             // amount will be multiple of 100
-                            'amount': (amount * 100)
-                                .toString(), //So its pay 500
+                            'amount':
+                                (amount * 100).toString(), //So its pay 500
                             'name': 'Dronaid',
                             'description': 'Demo',
                             'timeout': 300, // in seconds
@@ -208,8 +259,7 @@ class _HomePageState extends State<RazorPayClass> {
                             }
                           };
                           _razorpay.open(options);
-                        }
-                    )
+                        })
                   ],
                 ),
               ],
@@ -217,7 +267,6 @@ class _HomePageState extends State<RazorPayClass> {
           ),
         ],
       ),
-
     );
   }
 

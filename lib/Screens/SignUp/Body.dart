@@ -123,6 +123,7 @@ class _BodyState extends State<Body> {
     }).onError((error, stackTrace) {
       Utils().toastmessage(error.toString());
     });
+
   }
 
   @override

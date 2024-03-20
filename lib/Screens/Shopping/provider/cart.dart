@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
@@ -12,13 +14,62 @@ class CartItem {
       required this.title,
       required this.price,
       required this.quantity});
+
+  Map<dynamic, dynamic> toMap() {
+    return {
+      'id': this.id,
+      'title': this.title,
+      'quantity': this.quantity,
+      'price': this.price,
+    };
+  }
+
+  factory CartItem.fromMap(Map<dynamic, dynamic> map) {
+    return CartItem(
+      id: map['id'] as String,
+      title: map['title'] as String,
+      quantity: map['quantity'] as int,
+      price: map['price'] as int,
+    );
+  }
 }
 
 class Cart with ChangeNotifier {
+  final user = FirebaseAuth.instance.currentUser!.uid;
+
   Map<String, CartItem> _items = {};
+
+  // void loadItems(){
+  //  _items = FirebaseDatabase.instance.ref().child("USERS/${user}/cart/cart").get() as Map<String, CartItem>;
+  // }
+
+  void fetchCartItems() async {
+    await FirebaseDatabase.instance.ref("USERS/${user}/cart").get().then((value) {
+      Map data = value.value as Map;
+      print(data);
+
+     data.forEach((key, value) { _items.putIfAbsent(key, () => CartItem.fromMap(value));});
+
+      print(_items);
+
+      // for(var i =0; i< data.length;i++){
+      //   _items.putIfAbsent(data., () => null)
+      // }
+
+    });
+  }
 
   Map<String, CartItem> get items {
     return {..._items};
+  }
+
+  Map get itemsToMap {
+    Map cartData = {};
+    _items.forEach((key, value) {
+      cartData[key] = value.toMap();
+    });
+
+    return cartData;
   }
 
   int get itemCount {
@@ -34,7 +85,7 @@ class Cart with ChangeNotifier {
               id: existingCartItem.id,
               title: existingCartItem.title,
               price: existingCartItem.price,
-              quantity: existingCartItem.quantity + quantity));
+              quantity: quantity));
     } else {
       _items.putIfAbsent(
           productId,
@@ -44,6 +95,7 @@ class Cart with ChangeNotifier {
               price: price,
               quantity: quantity));
     }
+    updateCart();
     notifyListeners();
   }
 
@@ -57,6 +109,33 @@ class Cart with ChangeNotifier {
 
   void remove(String productId) {
     _items.remove(productId);
+    updateCart();
     notifyListeners();
   }
-}
+
+
+
+  void updateCart() async {
+    print(_items);
+
+    // _items.forEach((key, item) {
+    //   if (item != null) {
+    //     FirebaseDatabase.instance.ref("USERS/${user}/cart").set({
+    //       item.toMap(),
+    //     });
+    //   }
+    // });
+
+    Map cartData ={};
+
+     _items.forEach((key, value) {
+       cartData[key] = value.toMap();
+     });
+
+     print(cartData);
+
+
+
+    await FirebaseDatabase.instance.ref("USERS/${user}/cart").set(cartData);
+  }
+        }

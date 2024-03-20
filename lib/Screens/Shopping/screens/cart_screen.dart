@@ -16,6 +16,23 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   @override
+  void didChangeDependencies() {
+
+    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final cart = Provider.of<Cart>(context);
     return Scaffold(
@@ -44,12 +61,13 @@ class _CartScreenState extends State<CartScreen> {
                   TextButton(
                     onPressed: () {
                       Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const ConfirmDetails(),)
-                                // RazorPayClass(
-                                // Amount: (cart.totalAmount).round())),
-                      );
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ConfirmDetails(),
+                          )
+                          // RazorPayClass(
+                          // Amount: (cart.totalAmount).round())),
+                          );
                     },
                     child: const Text('ORDER NOW'),
                   ),

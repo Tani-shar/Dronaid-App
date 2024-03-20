@@ -8,6 +8,7 @@ class Product with ChangeNotifier {
   final String description;
   final int price ;
   final String category;
+  final double weight;
    String imageUrl;
   bool isFavourite;
   int quantity;
@@ -17,6 +18,7 @@ class Product with ChangeNotifier {
     required this.title,
     required this.description,
     required this.price,
+    required this.weight,
      this.imageUrl="abc.com",
     required this.category,
     this.isFavourite = false,
