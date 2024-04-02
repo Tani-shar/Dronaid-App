@@ -1,4 +1,5 @@
-import 'package:dronaidapp/Screens/Login/body.dart';
+
+import 'package:dronaidapp/Screens/SignUp/Body.dart';
 import 'package:flutter/material.dart';
 
 class SignUp extends StatelessWidget {

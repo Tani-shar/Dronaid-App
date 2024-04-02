@@ -92,7 +92,7 @@ class _ProductListState extends State<ProductList> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           ElevatedButton(onPressed: () {
-                            cart.addItem(productList[index].id, productList[index].price, productList[index].title, filteredProductList[index].quantity);
+                            cart.addItem("prod${productList[index].id}", productList[index].price, productList[index].title, filteredProductList[index].quantity);
                           }, child: Icon(Icons.shopping_cart),
                             style: ButtonStyle(
                                 backgroundColor: MaterialStatePropertyAll(Colors.white),

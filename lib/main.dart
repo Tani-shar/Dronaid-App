@@ -56,7 +56,7 @@ class MyApp extends StatelessWidget {
         //   primarySwatch: Colors.deepPurple,
         // ),
         // initialRoute: Tracking.routeName,
-        initialRoute: SplashScreen.id,
+        initialRoute: SignUp.id,
         routes: {
           OnBoardingScreen.id: (context) => OnBoardingScreen(),
           WelcomeBack.id: (context) => WelcomeBack(),

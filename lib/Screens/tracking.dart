@@ -1,8 +1,10 @@
+import 'package:dronaidapp/Screens/Shopping/provider/cart.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:provider/provider.dart';
 
 class Tracking extends StatefulWidget {
   const Tracking({super.key, this.destination});
@@ -149,6 +151,10 @@ class _TrackingState extends State<Tracking> {
     confirmRoute();
     updateDestination();
     addCustomIcon();
+
+
+
+
 
 
     super.initState();
