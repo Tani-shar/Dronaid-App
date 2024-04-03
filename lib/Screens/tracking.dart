@@ -1,4 +1,5 @@
 import 'package:dronaidapp/Screens/Shopping/provider/cart.dart';
+import 'package:dronaidapp/Screens/Shopping/provider/order.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -7,9 +8,10 @@ import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 
 class Tracking extends StatefulWidget {
-  const Tracking({super.key, this.destination});
+  const Tracking({super.key, this.order});
   static const routeName = 'Tracking';
-  final LatLng? destination;
+  final Order? order;
+
 
   @override
   State<Tracking> createState() => _TrackingState();
@@ -28,6 +30,7 @@ class _TrackingState extends State<Tracking> {
   double? droneLongitude;
   double? destinationLatitude;
   double? destinationLongitude;
+
 
   Set<Marker> markers = {};
   List<LatLng> route = [];
@@ -85,15 +88,12 @@ class _TrackingState extends State<Tracking> {
           markers.add(
             Marker(
               markerId: const MarkerId("Destination"),
-              position:
-              LatLng(destinationLatitude!, destinationLongitude!),
-
+              position: LatLng(destinationLatitude!, destinationLongitude!),
             ),
           );
           route = [
             LatLng(droneLatitude!, droneLongitude!),
             LatLng(destinationLatitude!, destinationLongitude!),
-
           ];
         });
       } else if (event.snapshot.value == null) {
@@ -105,7 +105,6 @@ class _TrackingState extends State<Tracking> {
   void updateDestination() async {
     try {
       await db.child("DRONE/Drone1/destination").update({
-
         "latitude": destinationLatitude!,
         "longitude": destinationLongitude!,
         "take-off": 1,
@@ -121,7 +120,6 @@ class _TrackingState extends State<Tracking> {
     route = [
       LatLng(droneLatitude!, droneLongitude!),
       LatLng(destinationLatitude!, destinationLongitude!),
-
     ];
   }
 
@@ -143,19 +141,18 @@ class _TrackingState extends State<Tracking> {
 
   @override
   void initState() {
-    destinationLatitude = widget.destination!.latitude;
-    destinationLongitude = widget.destination!.longitude;
-    // destinationLatitude = 13.360145;
-    // destinationLongitude = 74.7850583;
+
+    // destinationLatitude =
+    //     double.tryParse((widget.order!.location.split(","))[0]);
+    // destinationLongitude =
+    //     double.tryParse((widget.order!.location.split(","))[1]);
+
+    destinationLatitude = widget.order!.location.latitude;
+    destinationLongitude = widget.order!.location.longitude;
     route = [];
     confirmRoute();
     updateDestination();
     addCustomIcon();
-
-
-
-
-
 
     super.initState();
   }
@@ -229,7 +226,7 @@ class _TrackingState extends State<Tracking> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Order #123456',
+                                widget.order!.id,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16.0,
@@ -239,10 +236,17 @@ class _TrackingState extends State<Tracking> {
                                 highlightColor: Colors.redAccent,
                                 onTap: () => {},
                                 child: Container(
-                                  padding: EdgeInsets.all(4),
-                                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(4.0),color: Colors.red,),
-
-                                    child: Text("Cancel", style: TextStyle(color: Colors.white,),)),
+                                    padding: EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(4.0),
+                                      color: Colors.red,
+                                    ),
+                                    child: Text(
+                                      "Cancel",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    )),
                               ),
 
                               // Text('Delivery Status: $status'),
@@ -290,22 +294,17 @@ class _TrackingState extends State<Tracking> {
                                       style: TextStyle(fontSize: 15.0),
                                     ),
                                   ),
-                                  Column(
-                                    children: [
-                                      Container(
-                                        // width: double.infinity,
-                                        // width: 200,
-                                        // padding: const EdgeInsets.all(8),
-                                        child: const Text(
-                                          "MIT Quadrangle",
-                                          // overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                              // overflow: TextOverflow.ellipsis,
-                                              fontSize: 16.0,
-                                              fontWeight: FontWeight.w500,),
-                                        ),
+                                  Container(
+                                    width: 220,
+                                    child: Text(
+                                      widget.order!.address,
+                                      // overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        overflow: TextOverflow.ellipsis,
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.w500,
                                       ),
-                                    ],
+                                    ),
                                   ),
                                 ],
                               ),

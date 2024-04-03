@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:dronaidapp/Screens/Shopping/provider/order.dart';
 import 'package:dronaidapp/Screens/tracking.dart';
 import 'package:dronaidapp/constants.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/utils.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:marquee/marquee.dart';
@@ -31,6 +35,7 @@ class RazorPayClass extends StatefulWidget {
 class _HomePageState extends State<RazorPayClass> {
   late var _razorpay;
   var amountController = TextEditingController();
+  List prescriptionFile = [];
 
   @override
   void initState() {
@@ -44,20 +49,26 @@ class _HomePageState extends State<RazorPayClass> {
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
     // Do something when payment succeeds
+    final cart = Provider.of<Cart>(context, listen: false);
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => Tracking(destination: widget.destination),
+        builder: (context) => Tracking( order: Order(
+          address: widget.address!,
+          location: widget.destination!,
+          id: DateTime.timestamp().toString(),
+          cart: cart.itemsToMap,
+        ),),
       ),
     );
-    final cart = Provider.of<Cart>(context,listen: false);
+
     FirebaseDatabase.instance
         .ref("USERS/${FirebaseAuth.instance.currentUser!.uid}/Orders")
         .update(
       {
         "${DateTime.timestamp().hashCode}": Order(
           address: widget.address!,
-          location: widget.destination!.toString(),
+          location: widget.destination!,
           id: DateTime.timestamp().toString(),
           cart: cart.itemsToMap,
         ).toMap(),
@@ -75,6 +86,24 @@ class _HomePageState extends State<RazorPayClass> {
 
   void _handleExternalWallet(ExternalWalletResponse response) {
     // Do something when an external wallet is selected
+  }
+
+  Future addFiles() async {
+    try {
+      var files = await FilePicker.platform.pickFiles(
+        type: FileType.any,
+        allowMultiple: true,
+      );
+
+      if (files != null || files!.files.isNotEmpty) {
+        for (var i = 0; i < files.files.length; i++) {
+          prescriptionFile.add(File(files.files[i].name));
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
+    }
   }
 
   @override
@@ -170,8 +199,8 @@ class _HomePageState extends State<RazorPayClass> {
           // Persistent container at the bottom
           Container(
             padding: EdgeInsets.all(15),
-            height:
-                height * 0.25, // Set the desired height of the bottom container
+            // height:
+            //     height * 0.35, // Set the desired height of the bottom container
             decoration: BoxDecoration(
               color: Color.fromRGBO(245, 238, 248, 1),
               borderRadius: BorderRadius.only(
@@ -180,13 +209,14 @@ class _HomePageState extends State<RazorPayClass> {
               ),
             ),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Column(
                   children: [
                     Text(
                       "Delivering to:",
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(
                       height: 8,
@@ -202,8 +232,58 @@ class _HomePageState extends State<RazorPayClass> {
                   ],
                 ),
                 SizedBox(
+                  height: 8,
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xFF8689C6),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        spreadRadius: 1,
+                        blurRadius: 5,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: InkWell(
+                    onTap: () async {
+                      await addFiles();
+                      setState(() {});
+                    },
+                    child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      child: Text(
+                        'Upload Prescription +',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(
                   height: 12,
                 ),
+                (prescriptionFile.isNotEmpty)
+                    ? Container(
+                        padding: EdgeInsets.all(4),
+                        margin: EdgeInsets.fromLTRB(0, 0, 0, 12,),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.white60,
+                        ),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemBuilder: (context, index) =>
+                              Text(prescriptionFile[index].path),
+                          itemCount: prescriptionFile.length,
+                        ),
+                      )
+                    : SizedBox(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -215,10 +295,10 @@ class _HomePageState extends State<RazorPayClass> {
                     ),
                     GestureDetector(
                         child: Container(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                          height: height * 0.07,
-                          width: width * 0.35,
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 5),
+                          height: height * 0.052,
+                          width: width * 0.3,
                           decoration: BoxDecoration(
                             color: Colors.green,
                             borderRadius: BorderRadius.all(
@@ -226,7 +306,7 @@ class _HomePageState extends State<RazorPayClass> {
                             ),
                           ),
                           child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
                               Text(

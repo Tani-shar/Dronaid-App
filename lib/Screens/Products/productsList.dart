@@ -19,7 +19,7 @@ class _ProductListState extends State<ProductList> {
   late List<Product> filteredProductList; // Declare the filtered product list
 
   @override
-  final List productList = medicines;
+  final List<Product> productList = medicines;
   void initState() {
     filteredProductList = []; // Initialize the filtered product list
     Provider.of<Products>(context, listen: false).fetchAndSetProduct();
@@ -92,7 +92,7 @@ class _ProductListState extends State<ProductList> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           ElevatedButton(onPressed: () {
-                            cart.addItem("prod${productList[index].id}", productList[index].price, productList[index].title, filteredProductList[index].quantity);
+                            cart.addItem("prod${productList[index].id}", productList[index].price, productList[index].title, filteredProductList[index].quantity, productList[index].weight);
                           }, child: Icon(Icons.shopping_cart),
                             style: ButtonStyle(
                                 backgroundColor: MaterialStatePropertyAll(Colors.white),

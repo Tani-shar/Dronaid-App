@@ -16,18 +16,6 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   @override
-  void didChangeDependencies() {
-
-    super.didChangeDependencies();
-  }
-
-  @override
-  void dispose() {
-
-    super.dispose();
-  }
-
-  @override
   void initState() {
     super.initState();
   }
@@ -51,6 +39,8 @@ class _CartScreenState extends State<CartScreen> {
                 children: [
                   Text('Total', style: TextStyle(fontSize: 20)),
                   Spacer(),
+                  Text("${cart.totalWeight}Kg/1Kg"),
+                  Spacer(),
                   Chip(
                     label: Text(
                       '₹${cart.totalAmount}',
@@ -60,14 +50,18 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ConfirmDetails(),
-                          )
-                          // RazorPayClass(
-                          // Amount: (cart.totalAmount).round())),
-                          );
+                      (cart.totalWeight <= 1.0)
+                          ? Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ConfirmDetails(),
+                              )
+                              // RazorPayClass(
+                              // Amount: (cart.totalAmount).round())),
+                              )
+                          : ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content:
+                                  Text("Weight limit for order exceeded")));
                     },
                     child: const Text('ORDER NOW'),
                   ),
@@ -81,11 +75,13 @@ class _CartScreenState extends State<CartScreen> {
           Expanded(
             child: ListView.builder(
               itemBuilder: (ctx, id) => CartItems(
-                  id: cart.items.values.toList()[id].id,
-                  productId: cart.items.keys.toList()[id],
-                  title: cart.items.values.toList()[id].title,
-                  price: cart.items.values.toList()[id].price,
-                  quantity: cart.items.values.toList()[id].quantity),
+                id: cart.items.values.toList()[id].id,
+                productId: cart.items.keys.toList()[id],
+                title: cart.items.values.toList()[id].title,
+                price: cart.items.values.toList()[id].price,
+                quantity: cart.items.values.toList()[id].quantity,
+                weight: cart.items.values.toList()[id].weight,
+              ),
               itemCount: cart.itemCount,
             ),
           ),
