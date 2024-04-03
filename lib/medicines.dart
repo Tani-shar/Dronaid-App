@@ -8,7 +8,7 @@ List<Product> medicines = [
     price: 50,
     category: "Medicine",
     description: "Effective for reducing pain and fever. Suitable for various conditions.",
-    weight: 0.05, // Weight in kilograms
+    weight: 0.5, // Weight in kilograms
   ),
   Product(
     id: "1",

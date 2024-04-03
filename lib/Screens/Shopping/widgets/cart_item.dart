@@ -9,13 +9,15 @@ class CartItems extends StatelessWidget {
   final int price;
   final int quantity;
   final String title;
+  final double weight;
 
   CartItems(
       {required this.quantity,
       required this.productId,
       required this.title,
       required this.price,
-      required this.id});
+      required this.id,
+      required this.weight});
 
   @override
   Widget build(BuildContext context) {
@@ -38,14 +40,13 @@ class CartItems extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.all(8.0),
           child: ListTile(
-
             leading: CircleAvatar(
               child: Padding(
                   padding: EdgeInsets.all(8),
                   child: FittedBox(child: Text('₹${price}'))),
             ),
             title: Text(title),
-            subtitle: Text('${quantity * price}'),
+            subtitle: Text('${quantity * price}   ${weight}Kg'),
             trailing: Text('${quantity} x'),
           ),
         ),

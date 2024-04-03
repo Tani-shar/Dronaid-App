@@ -8,12 +8,15 @@ class CartItem {
   final String title;
   final int quantity;
   final int price;
+  final double weight;
 
-  CartItem(
-      {required this.id,
-      required this.title,
-      required this.price,
-      required this.quantity});
+  CartItem({
+    required this.id,
+    required this.title,
+    required this.price,
+    required this.quantity,
+    required this.weight,
+  });
 
   Map<dynamic, dynamic> toMap() {
     return {
@@ -21,6 +24,7 @@ class CartItem {
       'title': this.title,
       'quantity': this.quantity,
       'price': this.price,
+      'weight': weight,
     };
   }
 
@@ -30,6 +34,7 @@ class CartItem {
       title: map['title'] as String,
       quantity: map['quantity'] as int,
       price: map['price'] as int,
+      weight: map['weight'] as double,
     );
   }
 }
@@ -44,18 +49,22 @@ class Cart with ChangeNotifier {
   // }
 
   void fetchCartItems() async {
-    await FirebaseDatabase.instance.ref("USERS/${user}/cart").get().then((value) {
+    await FirebaseDatabase.instance
+        .ref("USERS/${user}/cart")
+        .get()
+        .then((value) {
       Map data = value.value as Map;
       print(data);
 
-     data.forEach((key, value) { _items.putIfAbsent(key, () => CartItem.fromMap(value));});
+      data.forEach((key, value) {
+        _items.putIfAbsent(key, () => CartItem.fromMap(value));
+      });
 
       print(_items);
 
       // for(var i =0; i< data.length;i++){
       //   _items.putIfAbsent(data., () => null)
       // }
-
     });
   }
 
@@ -76,24 +85,28 @@ class Cart with ChangeNotifier {
     return _items == null ? 0 : _items.length;
   }
 
-  void addItem(String productId, int price, String title, int quantity) {
+  void addItem(String productId, int price, String title, int quantity, double weight) {
     if (_items.containsKey(productId)) {
       // Chhange the quantity
       _items.update(
           productId,
           (existingCartItem) => CartItem(
-              id: existingCartItem.id,
-              title: existingCartItem.title,
-              price: existingCartItem.price,
-              quantity: quantity));
+                id: existingCartItem.id,
+                title: existingCartItem.title,
+                price: existingCartItem.price,
+                quantity: quantity,
+                weight: existingCartItem.weight,
+              ));
     } else {
       _items.putIfAbsent(
           productId,
           () => CartItem(
-              id: DateTime.now().toString(),
-              title: title,
-              price: price,
-              quantity: quantity));
+                id: DateTime.now().toString(),
+                title: title,
+                price: price,
+                quantity: quantity,
+                weight: weight,
+              ));
     }
     updateCart();
     notifyListeners();
@@ -107,13 +120,19 @@ class Cart with ChangeNotifier {
     return total;
   }
 
+  double get totalWeight {
+    var total = 0.0;
+    _items.forEach((key, value) {
+      total += value.weight * value.quantity;
+    });
+    return total;
+  }
+
   void remove(String productId) {
     _items.remove(productId);
     updateCart();
     notifyListeners();
   }
-
-
 
   void updateCart() async {
     print(_items);
@@ -126,16 +145,14 @@ class Cart with ChangeNotifier {
     //   }
     // });
 
-    Map cartData ={};
+    Map cartData = {};
 
-     _items.forEach((key, value) {
-       cartData[key] = value.toMap();
-     });
+    _items.forEach((key, value) {
+      cartData[key] = value.toMap();
+    });
 
-     print(cartData);
-
-
+    print(cartData);
 
     await FirebaseDatabase.instance.ref("USERS/${user}/cart").set(cartData);
   }
-        }
+}

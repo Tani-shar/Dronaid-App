@@ -8,7 +8,7 @@ class Order with ChangeNotifier {
   final String statusId;
   final Map cart;
   final String address;
-  final String location;
+  final LatLng location;
   final String userId = FirebaseAuth.instance.currentUser!.uid;
 
   Order({required this.address, required this.location, required this.id, this.status = "active", this.statusId = "-1", required this.cart});
@@ -20,7 +20,7 @@ class Order with ChangeNotifier {
       'statusId': this.statusId,
       'Cart': this.cart,
       'address': this.address,
-      'location': this.location,
+      'location': this.location.toString(),
     };
   }
 
@@ -31,7 +31,7 @@ class Order with ChangeNotifier {
       statusId: map['statusId'] as String,
       cart: map['cart'] as Map,
       address: map['address'] as String,
-      location: map['location'] as String,
+      location: map['location'] as LatLng,
     );
   }
 }
